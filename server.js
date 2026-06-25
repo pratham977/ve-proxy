@@ -25,10 +25,20 @@ app.post('/parse-10k', async (req, res) => {
         })
       }
     );
-    const data = await response.json();
+
+    const raw = await response.text();
+    console.log('Gemini status:', response.status);
+    console.log('Gemini response:', raw.slice(0, 500));
+
+    if (!response.ok) {
+      return res.status(500).json({ error: `Gemini error ${response.status}: ${raw.slice(0, 200)}` });
+    }
+
+    const data = JSON.parse(raw);
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
     res.json({ text });
   } catch (err) {
+    console.error('Proxy error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
